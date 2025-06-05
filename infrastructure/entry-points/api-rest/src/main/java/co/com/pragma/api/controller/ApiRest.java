@@ -1,6 +1,7 @@
 package co.com.pragma.api.controller;
 import co.com.pragma.api.dto.ResponseErrorDto;
 import co.com.pragma.api.dto.TicketingRequestDto;
+import co.com.pragma.api.dto.TicketingResponseDto;
 import co.com.pragma.api.mapper.TicketingDtoMapper;
 import co.com.pragma.model.ticketing.Ticketing;
 import co.com.pragma.model.ticketing.Url;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.actuate.health.HealthComponent;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.health.Status;
@@ -38,15 +40,19 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/ticketing", produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
+@Tag(name = "Ticketing", description = "Creacion de venta")
 public class ApiRest {
 
     private HealthEndpoint healthEndpoint;
     private final TicketingUseCase ticketingUseCase;
 
-    @Operation(summary = "Metodo que permite monitorear la API")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Respuesta exitosa", content = {@Content(mediaType = "application/json")})
-    })
+    @Operation(
+            summary = "Verifica el estado del servicio",
+            description = "Este endpoint permite monitorear si el servicio está disponible.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "El servicio está activo"),
+            }
+    )
     @RequestMapping(path = "/health", method = RequestMethod.HEAD)
     public ResponseEntity<Void> health() {
         HealthComponent healthComponent = healthEndpoint.health();
@@ -60,16 +66,17 @@ public class ApiRest {
 
     @Operation(summary = "Permite guardar una venta")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Respuesta exitosa", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = TicketingRequestDto.class))}),
+            @ApiResponse(responseCode = "200", description = "Respuesta exitosa", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = TicketingResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "Error en la solicitud", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ResponseErrorDto.class))}),
             @ApiResponse(responseCode = "409", description = "Se presentan conflictos con los datos de la solicitud", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ResponseErrorDto.class))})
     })
     @PostMapping
-    public Ticketing sale(@RequestBody @Valid TicketingRequestDto ticketingRequestDto){
+    public TicketingResponseDto sale(@RequestBody @Valid TicketingRequestDto ticketingRequestDto){
         String uniqueCode = UUID.randomUUID().toString();
         Ticketing ticketing = TicketingDtoMapper.ticketingDtoToTicketing(ticketingRequestDto, uniqueCode);
         Url url = TicketingDtoMapper.toUrl(uniqueCode);
-        return ticketingUseCase.save(ticketing, url);
+        Ticketing ticketingResponse = ticketingUseCase.save(ticketing, url);
+        return TicketingDtoMapper.toTicketingResponseDto(ticketingResponse);
     }
 
 }

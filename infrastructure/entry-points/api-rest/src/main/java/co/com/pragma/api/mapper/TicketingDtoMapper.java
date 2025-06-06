@@ -5,7 +5,6 @@ import co.com.pragma.api.dto.TicketingResponseDto;
 import co.com.pragma.model.ticketing.Ticketing;
 import co.com.pragma.model.ticketing.Url;
 
-import java.util.UUID;
 
 public class TicketingDtoMapper {
 

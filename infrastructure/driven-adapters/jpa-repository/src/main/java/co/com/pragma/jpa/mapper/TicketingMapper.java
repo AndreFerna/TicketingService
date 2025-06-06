@@ -12,8 +12,6 @@ public class TicketingMapper {
         return TicketingEntity.builder()
                 .numberTickets(ticketing.getNumberTickets())
                 .price(ticketing.getPrice())
-                /*.date(LocalDateTime.parse("2025-06-05 12:00:00",
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))*/
                 .date(LocalDateTime.now())
                 .used(ticketing.getUsed())
                 .uniqueCode(ticketing.getUniqueCode())
